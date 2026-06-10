@@ -39,21 +39,20 @@ export function TutorPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, loading]);
 
-  async function send(text: string) {
+  async function send(text: string, messagesOverride?: Msg[]) {
     if (!text.trim() || loading) return;
     setError(null);
-    const newMsgs: Msg[] = [...messages, { role: 'user', content: text }];
+    const newMsgs: Msg[] = messagesOverride || [...messages, { role: 'user', content: text }];
     setMessages(newMsgs);
     setInput('');
     setLoading(true);
 
     try {
-      const isDev = import.meta.env.DEV;
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      let text = '';
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY');
+      let replyText = '';
 
-      if (isDev && apiKey) {
-        // Direct call to Gemini API for local development convenience
+      if (apiKey) {
+        // Direct call to Gemini API for local development or custom key override
         const SYSTEM_PROMPT = `You are LawLab AI Tutor — an expert in Indian law helping LLB students and CLAT aspirants.
 
 Your style:
@@ -74,7 +73,7 @@ Keep responses focused — aim for 200-500 words unless the user asks for more d
         }));
 
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -90,7 +89,7 @@ Keep responses focused — aim for 200-500 words unless the user asks for more d
         if (!res.ok) {
           throw new Error(data.error?.message || 'Gemini API Error');
         }
-        text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+        replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
       } else {
         // Secure call to Vercel Serverless Function in production
         const res = await fetch('/api/tutor', {
@@ -103,10 +102,10 @@ Keep responses focused — aim for 200-500 words unless the user asks for more d
         if (!res.ok) {
           throw new Error(data.error || 'API Error');
         }
-        text = data.reply ?? '';
+        replyText = data.reply ?? '';
       }
 
-      setMessages([...newMsgs, { role: 'model', content: text }]);
+      setMessages([...newMsgs, { role: 'model', content: replyText }]);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -194,8 +193,45 @@ Keep responses focused — aim for 200-500 words unless the user asks for more d
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
+              <div className="bg-red-50 border border-red-200 text-red-700 p-5 rounded-2xl text-sm space-y-3 animate-fade-in">
+                <div className="font-semibold">{error}</div>
+                {error.includes('GEMINI_API_KEY') && (
+                  <div className="p-4 bg-white rounded-xl border border-red-100 space-y-3 text-left">
+                    <p className="text-xs text-ink-900/60 leading-relaxed">
+                      This deployment doesn't have a Google Gemini API Key configured. You can paste your own API key below to run AI features directly from your browser. It is stored securely only on your device.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        placeholder="Paste AIzaSy... API key"
+                        className="flex-1 px-4 py-2 text-xs rounded-xl bg-ink-900/[0.02] border border-ink-900/5 outline-none focus:ring-2 focus:ring-brand-violet/30 text-ink-900 placeholder:text-ink-900/40 font-mono"
+                        id="tutor-api-key-input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const inputVal = (document.getElementById('tutor-api-key-input') as HTMLInputElement)?.value.trim();
+                          if (inputVal) {
+                            localStorage.setItem('GEMINI_API_KEY', inputVal);
+                            setError(null);
+                            const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+                            if (lastUserMsg) {
+                              send(lastUserMsg.content, messages);
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-brand-grad text-white text-xs font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-sm whitespace-nowrap"
+                      >
+                        Save & Retry
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-brand-violet font-semibold">
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-0.5">
+                        Get a free key from Google AI Studio &rarr;
+                      </a>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -35,12 +35,11 @@ export function SummarizerPage() {
     setSummary(null);
 
     try {
-      const isDev = import.meta.env.DEV;
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY');
       let parsed: Summary;
 
-      if (isDev && apiKey) {
-        // Direct call to Gemini API for local development convenience
+      if (apiKey) {
+        // Direct call to Gemini API for local development or custom key override
         const SYSTEM_PROMPT = `You are LawLab Case Summarizer. Given a court judgment text (Indian, UK, or US common law), extract its essential elements into structured JSON.
 
 Be accurate. If a field cannot be determined from the text, use an empty string or empty array. Do not fabricate.`;
@@ -66,7 +65,7 @@ Be accurate. If a field cannot be determined from the text, use an empty string 
 
         const truncated = input.slice(0, 30000);
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -157,7 +156,45 @@ Be accurate. If a field cannot be determined from the text, use an empty string 
                 </div>
               </div>
               <div className="border-t border-ink-900/5 p-4 bg-ink-900/[0.01]">
-                {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
+                {error && (
+                  <div className="mb-3 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-sm space-y-3 text-left">
+                    <div className="font-semibold">{error}</div>
+                    {error.includes('GEMINI_API_KEY') && (
+                      <div className="p-4 bg-white rounded-xl border border-red-100 space-y-3">
+                        <p className="text-xs text-ink-900/60 leading-relaxed">
+                          This deployment doesn't have a Google Gemini API Key configured. You can paste your own API key below to run AI features directly from your browser. It is stored securely only on your device.
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            type="password"
+                            placeholder="Paste AIzaSy... API key"
+                            className="flex-1 px-4 py-2 text-xs rounded-xl bg-ink-900/[0.02] border border-ink-900/5 outline-none focus:ring-2 focus:ring-brand-violet/30 text-ink-900 placeholder:text-ink-900/40 font-mono"
+                            id="summarizer-api-key-input"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const inputVal = (document.getElementById('summarizer-api-key-input') as HTMLInputElement)?.value.trim();
+                              if (inputVal) {
+                                localStorage.setItem('GEMINI_API_KEY', inputVal);
+                                setError(null);
+                                summarize();
+                              }
+                            }}
+                            className="px-4 py-2 bg-brand-grad text-white text-xs font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-sm whitespace-nowrap"
+                          >
+                            Save & Retry
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-brand-violet font-semibold">
+                          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-0.5">
+                            Get a free key from Google AI Studio &rarr;
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <button
                   onClick={summarize}
                   disabled={loading || input.trim().length < 50}
