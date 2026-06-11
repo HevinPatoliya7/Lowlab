@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -11,6 +12,8 @@ import {
   Zap,
   Target,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { FadeIn } from '../components/FadeIn';
 import { CASES } from '../data/cases';
@@ -60,6 +63,19 @@ const STATS = [
 ];
 
 export function HomePage() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' 
+        ? scrollLeft - clientWidth * 0.75 
+        : scrollLeft + clientWidth * 0.75;
+      
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="overflow-hidden">
       {/* HERO */}
@@ -196,6 +212,88 @@ export function HomePage() {
                 </FadeIn>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LANDMARK CASES CAROUSEL */}
+      <section className="relative py-20 md:py-32 bg-ink-900/[0.01]">
+        <div className="max-w-7xl mx-auto px-6">
+          <FadeIn>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+              <div>
+                <span className="text-sm font-bold uppercase tracking-widest text-brand-violet">Landmark Cases</span>
+                <h2 className="mt-4 text-4xl md:text-6xl font-bold tracking-tight text-ink-900">
+                  Master the precedents.
+                </h2>
+                <p className="mt-4 text-lg text-ink-900/60 max-w-xl">
+                  Scroll through the key judgments that shaped Indian constitutional history and common law doctrines.
+                </p>
+              </div>
+              <div className="flex gap-2.5">
+                <button 
+                  onClick={() => scroll('left')}
+                  className="w-12 h-12 rounded-full border border-ink-900/10 hover:border-ink-900/20 bg-white hover:bg-ink-900/5 flex items-center justify-center text-ink-900 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  aria-label="Scroll Left"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button 
+                  onClick={() => scroll('right')}
+                  className="w-12 h-12 rounded-full border border-ink-900/10 hover:border-ink-900/20 bg-white hover:bg-ink-900/5 flex items-center justify-center text-ink-900 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  aria-label="Scroll Right"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </FadeIn>
+
+          <div 
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto pb-8 scroll-smooth snap-x snap-mandatory scrollbar-none"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {CASES.map((c) => (
+              <div 
+                key={c.id}
+                className="snap-align-start shrink-0 w-[300px] md:w-[380px] p-8 rounded-[2rem] bg-white border border-ink-900/5 shadow-sm flex flex-col justify-between hover:shadow-xl hover:border-brand-violet/20 hover:scale-[1.01] transition-all duration-300 relative overflow-hidden group"
+              >
+                {/* Background ambient light card hover */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-brand-violet/5 rounded-full blur-2xl group-hover:bg-brand-violet/10 transition-all" />
+                
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-grad-soft text-brand-violet">
+                      {c.category}
+                    </span>
+                    <span className="text-xs font-bold text-ink-900/40">
+                      {c.year}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-ink-900 leading-snug mb-2 group-hover:text-brand-violet transition-colors duration-300">
+                    {c.name}
+                  </h3>
+                  
+                  <p className="text-[10px] font-bold text-ink-900/30 font-mono tracking-wider mb-4 uppercase">
+                    {c.citation}
+                  </p>
+                  
+                  <p className="text-sm text-ink-900/60 line-clamp-4 leading-relaxed mb-8">
+                    {c.significance}
+                  </p>
+                </div>
+                
+                <Link 
+                  to={`/library?caseId=${c.id}`}
+                  className="w-full py-3.5 rounded-xl bg-ink-900 hover:bg-brand-violet text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm mt-auto cursor-pointer"
+                >
+                  <span>Explore Case Details</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </section>

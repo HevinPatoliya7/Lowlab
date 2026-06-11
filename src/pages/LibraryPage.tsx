@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, BookOpen, Scale, X, Sparkles } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { CASES, type Case } from '../data/cases';
 import { SECTIONS, type Section } from '../data/sections';
 
@@ -10,12 +11,38 @@ const CASE_CATS = ['All', 'Constitutional', 'Criminal', 'Civil', 'Contract', 'To
 const SECTION_CATS = ['All', 'Constitution', 'IPC', 'CrPC', 'Contract', 'Evidence'] as const;
 
 export function LibraryPage() {
-  const [tab, setTab] = useState<Tab>('cases');
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as Tab) || 'cases';
+  const initialQuery = searchParams.get('q') || '';
+  const caseId = searchParams.get('caseId');
+  const sectionId = searchParams.get('sectionId');
+
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const [query, setQuery] = useState(initialQuery);
   const [caseCat, setCaseCat] = useState<string>('All');
   const [secCat, setSecCat] = useState<string>('All');
   const [openCase, setOpenCase] = useState<Case | null>(null);
   const [openSection, setOpenSection] = useState<Section | null>(null);
+
+  useEffect(() => {
+    if (caseId) {
+      const found = CASES.find((c) => c.id === caseId);
+      if (found) {
+        setOpenCase(found);
+        setTab('cases');
+      }
+    }
+  }, [caseId]);
+
+  useEffect(() => {
+    if (sectionId) {
+      const found = SECTIONS.find((s) => s.id === sectionId);
+      if (found) {
+        setOpenSection(found);
+        setTab('sections');
+      }
+    }
+  }, [sectionId]);
 
   const filteredCases = useMemo(() => {
     const q = query.toLowerCase().trim();

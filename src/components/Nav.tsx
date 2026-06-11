@@ -34,11 +34,13 @@ export function Nav() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/80 backdrop-blur-lg border-b border-ink-900/5 py-3' : 'bg-transparent py-5'
+        className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-out ${
+          scrolled 
+            ? 'top-4 w-[calc(100%-2rem)] max-w-5xl rounded-full bg-white/40 border border-white/30 backdrop-blur-xl shadow-[0_20px_50px_rgba(124,58,237,0.08)] py-2.5 px-3' 
+            : 'top-0 w-full bg-transparent py-5 px-6 border-b border-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-2xl bg-brand-grad flex items-center justify-center shadow-lg shadow-brand-violet/30 group-hover:scale-110 transition-transform">
               <Scale className="w-5 h-5 text-white" strokeWidth={2.5} />
@@ -51,9 +53,9 @@ export function Nav() {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                   location.pathname === link.to
-                    ? 'bg-ink-900/5 text-ink-900'
+                    ? 'bg-brand-grad text-white shadow-md shadow-brand-violet/20 font-semibold'
                     : 'text-ink-900/70 hover:text-ink-900 hover:bg-ink-900/5'
                 }`}
               >
@@ -75,7 +77,7 @@ export function Nav() {
                 <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-brand-violet rounded-full ring-2 ring-white" />
               )}
             </button>
-            <Link to="/tutor" className="btn-primary text-sm">
+            <Link to="/tutor" className="btn-primary text-sm py-2 px-5">
               Start learning
             </Link>
           </div>

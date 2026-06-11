@@ -19,8 +19,11 @@ function Linkedin(props: React.SVGProps<SVGSVGElement>) {
 
 export function Footer() {
   return (
-    <footer className="mt-32 border-t border-ink-900/10">
-      <div className="max-w-7xl mx-auto px-6 py-16">
+    <footer className="mt-32 max-w-7xl mx-auto rounded-[3rem] border border-white/20 bg-white/40 backdrop-blur-xl shadow-2xl overflow-hidden relative mb-12">
+      {/* soft ambient light glow */}
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-brand-violet/10 rounded-full blur-[80px] pointer-events-none" />
+
+      <div className="relative px-8 md:px-12 py-16">
         <div className="grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
@@ -48,15 +51,15 @@ export function Footer() {
             <h4 className="font-bold text-ink-900 mb-4">Connect</h4>
             <div className="flex gap-3">
               <a href="https://github.com/HevinPatoliya7" target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition">
+                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition border border-ink-900/5 hover:border-brand-violet/20 hover:scale-105 active:scale-95 duration-300">
                 <Github className="w-4 h-4" />
               </a>
               <a href="https://www.linkedin.com/in/hevinpatoliya" target="_blank" rel="noreferrer"
-                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition">
+                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition border border-ink-900/5 hover:border-brand-violet/20 hover:scale-105 active:scale-95 duration-300">
                 <Linkedin className="w-4 h-4" />
               </a>
               <a href="mailto:hevinpatoliya@gmail.com"
-                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition">
+                className="w-10 h-10 rounded-full bg-ink-900/5 hover:bg-brand-grad-soft flex items-center justify-center transition border border-ink-900/5 hover:border-brand-violet/20 hover:scale-105 active:scale-95 duration-300">
                 <Mail className="w-4 h-4" />
               </a>
             </div>

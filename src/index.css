@@ -138,8 +138,10 @@ body {
   height: 2.5px;
   background: #7C3AED;
   opacity: 0.3;
+}.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
-
-
-
-
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
