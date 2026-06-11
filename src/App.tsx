@@ -11,20 +11,27 @@ import { LibraryPage } from './pages/LibraryPage';
 function App() {
   useEffect(() => {
     const cursor = document.getElementById('custom-mouse-cursor');
-    const dot = document.getElementById('custom-mouse-dot');
-    if (!cursor || !dot) return;
+    const dot1 = document.getElementById('custom-mouse-dot-1');
+    const dot2 = document.getElementById('custom-mouse-dot-2');
+    const dot3 = document.getElementById('custom-mouse-dot-3');
+    if (!cursor || !dot1 || !dot2 || !dot3) return;
 
     let mouseX = -100;
     let mouseY = -100;
+    
+    // Outer ring states
     let ringX = -100;
     let ringY = -100;
-    let dotX = -100;
-    let dotY = -100;
+    let ringWidth = 24;
+    let ringHeight = 24;
     
-    let lastMouseX = -100;
-    let lastMouseY = -100;
+    // Comet trail states (lerp coords)
+    let d1X = -100, d1Y = -100;
+    let d2X = -100, d2Y = -100;
+    let d3X = -100, d3Y = -100;
     
-    let isHovering = false;
+    let isMagnetized = false;
+    let activeElement: HTMLElement | null = null;
     let isActive = false;
 
     const onMouseMove = (e: MouseEvent) => {
@@ -34,20 +41,16 @@ function App() {
       const target = e.target as HTMLElement;
       if (!target) return;
       
-      const isPointer = !!(
-        target.tagName === 'BUTTON' || 
-        target.tagName === 'A' || 
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.tagName === 'SELECT' ||
-        target.closest('button') || 
-        target.closest('a') ||
-        target.closest('[role="button"]') ||
-        target.classList.contains('cursor-pointer') ||
-        window.getComputedStyle(target).cursor === 'pointer'
-      );
-
-      isHovering = isPointer;
+      // Snaps to buttons, links, dropdowns, inputs, custom cursor-pointers
+      const interactive = target.closest('button, a, input, textarea, select, [role="button"], .cursor-pointer') as HTMLElement;
+      
+      if (interactive) {
+        isMagnetized = true;
+        activeElement = interactive;
+      } else {
+        isMagnetized = false;
+        activeElement = null;
+      }
     };
 
     const onMouseDown = () => {
@@ -70,65 +73,77 @@ function App() {
         return;
       }
 
+      // Initialize positions
       if (ringX === -100) {
         ringX = mouseX;
         ringY = mouseY;
-        dotX = mouseX;
-        dotY = mouseY;
+        d1X = d2X = d3X = mouseX;
+        d1Y = d2Y = d3Y = mouseY;
       }
 
-      // 1. Position Interpolation (Lerping)
-      // Dot follows mouse very closely with a micro-ease
-      dotX += (mouseX - dotX) * 0.45;
-      dotY += (mouseY - dotY) * 0.45;
-
-      // Outer ring follows with inertia lag
-      const ringLerp = isHovering ? 0.2 : 0.12;
-      ringX += (mouseX - ringX) * ringLerp;
-      ringY += (mouseY - ringY) * ringLerp;
-
-      // 2. Velocity calculation for squish effect
-      const vx = mouseX - lastMouseX;
-      const vy = mouseY - lastMouseY;
-      lastMouseX = mouseX;
-      lastMouseY = mouseY;
-
-      const speed = Math.sqrt(vx * vx + vy * vy);
+      // 1. Comet trail calculations
+      d1X += (mouseX - d1X) * 0.45;
+      d1Y += (mouseY - d1Y) * 0.45;
       
-      // Update Dot Position
-      dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate3d(-50%, -50%, 0)`;
+      d2X += (d1X - d2X) * 0.35;
+      d2Y += (d1Y - d2Y) * 0.35;
       
-      // Update Ring Position & Transform Styles
-      let transformStr = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)`;
+      d3X += (d2X - d3X) * 0.25;
+      d3Y += (d2Y - d3Y) * 0.25;
 
-      if (isHovering) {
+      // 2. Snapping targets
+      let targetX = mouseX;
+      let targetY = mouseY;
+      let targetWidth = 24;
+      let targetHeight = 24;
+      let targetRadius = '50%';
+
+      if (isMagnetized && activeElement) {
+        const rect = activeElement.getBoundingClientRect();
+        targetX = rect.left + rect.width / 2;
+        targetY = rect.top + rect.height / 2;
+        targetWidth = rect.width + 12;
+        targetHeight = rect.height + 12;
+        
+        // Inherit border radius of target button/link
+        const style = window.getComputedStyle(activeElement);
+        targetRadius = style.borderRadius === '50%' || (style.width === style.height && style.borderRadius.includes('50%'))
+          ? '50%'
+          : style.borderRadius || '12px';
+      }
+
+      // Physics based lerp for smooth snapping transition
+      const snapLerp = isMagnetized ? 0.22 : 0.12;
+      ringX += (targetX - ringX) * snapLerp;
+      ringY += (targetY - ringY) * snapLerp;
+      ringWidth += (targetWidth - ringWidth) * snapLerp;
+      ringHeight += (targetHeight - ringHeight) * snapLerp;
+
+      // Apply positions to comets
+      dot1.style.transform = `translate3d(${d1X}px, ${d1Y}px, 0) translate3d(-50%, -50%, 0)`;
+      dot2.style.transform = `translate3d(${d2X}px, ${d2Y}px, 0) translate3d(-50%, -50%, 0)`;
+      dot3.style.transform = `translate3d(${d3X}px, ${d3Y}px, 0) translate3d(-50%, -50%, 0)`;
+
+      // Apply coordinates, size, and styling to outer ring
+      let scalePress = isActive ? ' scale(0.92)' : '';
+      cursor.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)${scalePress}`;
+      cursor.style.width = `${ringWidth}px`;
+      cursor.style.height = `${ringHeight}px`;
+      cursor.style.borderRadius = targetRadius;
+
+      if (isMagnetized) {
         cursor.classList.add('cursor-hover');
-        const scaleVal = isActive ? 1.4 : 1.8;
-        transformStr += ` scale(${scaleVal})`;
       } else {
         cursor.classList.remove('cursor-hover');
-        if (isActive) {
-          transformStr += ` scale(0.65)`;
-        } else {
-          // Dynamic squish/stretch along the vector of motion
-          const stretch = Math.min(speed * 0.015, 0.4);
-          const angle = Math.atan2(vy, vx) * (180 / Math.PI);
-          
-          if (speed > 1) {
-            transformStr += ` rotate(${angle}deg) scale(${1 + stretch}, ${1 - stretch})`;
-          }
-        }
       }
 
       if (isActive) {
         cursor.classList.add('cursor-active');
-        dot.classList.add('cursor-active');
+        dot1.classList.add('cursor-active');
       } else {
         cursor.classList.remove('cursor-active');
-        dot.classList.remove('cursor-active');
+        dot1.classList.remove('cursor-active');
       }
-
-      cursor.style.transform = transformStr;
 
       animationFrameId = requestAnimationFrame(updateCursor);
     };
@@ -145,9 +160,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* Custom Mouse Cursor Followers */}
+      {/* Premium Magnetic Cursor & Comet Trail */}
       <div id="custom-mouse-cursor" className="hidden md:block" />
-      <div id="custom-mouse-dot" className="hidden md:block" />
+      <div id="custom-mouse-dot-1" className="custom-mouse-dot hidden md:block" />
+      <div id="custom-mouse-dot-2" className="custom-mouse-dot hidden md:block" />
+      <div id="custom-mouse-dot-3" className="custom-mouse-dot hidden md:block" />
 
       <Nav />
       <Routes>

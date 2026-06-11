@@ -83,45 +83,63 @@ body {
   left: 0;
   width: 24px;
   height: 24px;
-  border: 1.5px solid rgba(124, 58, 237, 0.5);
-  border-radius: 50%;
+  border: 1.5px solid rgba(124, 58, 237, 0.45);
   pointer-events: none;
   z-index: 9999;
   transform: translate3d(-100px, -100px, 0);
-  transition: border-color 0.25s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: transform;
+  /* Disable layout-heavy width/height/transform transitions; only morph colors, shadows, and border-radius */
+  transition: border-color 0.25s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s cubic-bezier(0.25, 1, 0.5, 1), border-radius 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform, width, height, border-radius;
 }
 
 #custom-mouse-cursor.cursor-hover {
-  border-color: rgba(230, 57, 133, 0.9);
-  background-color: rgba(230, 57, 133, 0.08);
-  box-shadow: 0 0 20px rgba(230, 57, 133, 0.25);
+  border-color: rgba(230, 57, 133, 0.85);
+  background-color: rgba(230, 57, 133, 0.05);
+  box-shadow: 0 0 20px rgba(230, 57, 133, 0.2);
 }
 
 #custom-mouse-cursor.cursor-active {
   border-color: #FF6B3D;
-  background-color: rgba(255, 107, 61, 0.12);
-  box-shadow: 0 0 25px rgba(255, 107, 61, 0.45);
+  background-color: rgba(255, 107, 61, 0.08);
+  box-shadow: 0 0 25px rgba(255, 107, 61, 0.3);
 }
 
-#custom-mouse-dot {
+.custom-mouse-dot {
   position: fixed;
   top: 0;
   left: 0;
-  width: 6px;
-  height: 6px;
-  background: linear-gradient(135deg, #FF6B3D, #E63985, #7C3AED);
   border-radius: 50%;
   pointer-events: none;
   z-index: 10000;
   transform: translate3d(-100px, -100px, 0);
-  transition: background-color 0.2s ease;
   will-change: transform;
 }
 
-#custom-mouse-dot.cursor-active {
+#custom-mouse-dot-1 {
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, #FF6B3D, #E63985, #7C3AED);
+  transition: background-color 0.2s;
+}
+
+#custom-mouse-dot-1.cursor-active {
   background: #FF6B3D;
 }
+
+#custom-mouse-dot-2 {
+  width: 4px;
+  height: 4px;
+  background: #E63985;
+  opacity: 0.6;
+}
+
+#custom-mouse-dot-3 {
+  width: 2.5px;
+  height: 2.5px;
+  background: #7C3AED;
+  opacity: 0.3;
+}
+
 
 
 
