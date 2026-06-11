@@ -14,14 +14,27 @@ function App() {
     const dot = document.getElementById('custom-mouse-dot');
     if (!cursor || !dot) return;
 
+    let mouseX = -100;
+    let mouseY = -100;
+    let ringX = -100;
+    let ringY = -100;
+    let dotX = -100;
+    let dotY = -100;
+    
+    let lastMouseX = -100;
+    let lastMouseY = -100;
+    
+    let isHovering = false;
+    let isActive = false;
+
     const onMouseMove = (e: MouseEvent) => {
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      mouseX = e.clientX;
+      mouseY = e.clientY;
       
       const target = e.target as HTMLElement;
       if (!target) return;
       
-      const isPointer = 
+      const isPointer = !!(
         target.tagName === 'BUTTON' || 
         target.tagName === 'A' || 
         target.tagName === 'INPUT' ||
@@ -31,33 +44,102 @@ function App() {
         target.closest('a') ||
         target.closest('[role="button"]') ||
         target.classList.contains('cursor-pointer') ||
-        window.getComputedStyle(target).cursor === 'pointer';
+        window.getComputedStyle(target).cursor === 'pointer'
+      );
 
-      if (isPointer) {
-        cursor.classList.add('cursor-hover');
-      } else {
-        cursor.classList.remove('cursor-hover');
-      }
+      isHovering = isPointer;
     };
 
     const onMouseDown = () => {
-      cursor.classList.add('cursor-active');
-      dot.classList.add('cursor-active');
+      isActive = true;
     };
 
     const onMouseUp = () => {
-      cursor.classList.remove('cursor-active');
-      dot.classList.remove('cursor-active');
+      isActive = false;
     };
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
-    
+
+    let animationFrameId: number;
+
+    const updateCursor = () => {
+      if (mouseX === -100) {
+        animationFrameId = requestAnimationFrame(updateCursor);
+        return;
+      }
+
+      if (ringX === -100) {
+        ringX = mouseX;
+        ringY = mouseY;
+        dotX = mouseX;
+        dotY = mouseY;
+      }
+
+      // 1. Position Interpolation (Lerping)
+      // Dot follows mouse very closely with a micro-ease
+      dotX += (mouseX - dotX) * 0.45;
+      dotY += (mouseY - dotY) * 0.45;
+
+      // Outer ring follows with inertia lag
+      const ringLerp = isHovering ? 0.2 : 0.12;
+      ringX += (mouseX - ringX) * ringLerp;
+      ringY += (mouseY - ringY) * ringLerp;
+
+      // 2. Velocity calculation for squish effect
+      const vx = mouseX - lastMouseX;
+      const vy = mouseY - lastMouseY;
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+
+      const speed = Math.sqrt(vx * vx + vy * vy);
+      
+      // Update Dot Position
+      dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate3d(-50%, -50%, 0)`;
+      
+      // Update Ring Position & Transform Styles
+      let transformStr = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)`;
+
+      if (isHovering) {
+        cursor.classList.add('cursor-hover');
+        const scaleVal = isActive ? 1.4 : 1.8;
+        transformStr += ` scale(${scaleVal})`;
+      } else {
+        cursor.classList.remove('cursor-hover');
+        if (isActive) {
+          transformStr += ` scale(0.65)`;
+        } else {
+          // Dynamic squish/stretch along the vector of motion
+          const stretch = Math.min(speed * 0.015, 0.4);
+          const angle = Math.atan2(vy, vx) * (180 / Math.PI);
+          
+          if (speed > 1) {
+            transformStr += ` rotate(${angle}deg) scale(${1 + stretch}, ${1 - stretch})`;
+          }
+        }
+      }
+
+      if (isActive) {
+        cursor.classList.add('cursor-active');
+        dot.classList.add('cursor-active');
+      } else {
+        cursor.classList.remove('cursor-active');
+        dot.classList.remove('cursor-active');
+      }
+
+      cursor.style.transform = transformStr;
+
+      animationFrameId = requestAnimationFrame(updateCursor);
+    };
+
+    updateCursor();
+
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
+      cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
