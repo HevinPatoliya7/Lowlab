@@ -76,3 +76,40 @@ body {
   background: linear-gradient(180deg, #FF6B3D, #7C3AED);
   border-radius: 10px;
 }
+
+#custom-mouse-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid rgba(124, 58, 237, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1), width 0.2s, height 0.2s, border-color 0.2s;
+  will-change: transform;
+}
+
+#custom-mouse-cursor.cursor-hover {
+  width: 44px;
+  height: 44px;
+  border-color: rgba(230, 57, 133, 0.8);
+  background: rgba(230, 57, 133, 0.05);
+  transform: translate3d(-22px, -22px, 0);
+}
+
+#custom-mouse-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, #FF6B3D, #E63985, #7C3AED);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transition: transform 0.01s linear;
+  will-change: transform;
+}
+

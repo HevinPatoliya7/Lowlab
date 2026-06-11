@@ -35,7 +35,7 @@ export function SummarizerPage() {
     setSummary(null);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY');
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
       let parsed: Summary;
 
       if (apiKey) {

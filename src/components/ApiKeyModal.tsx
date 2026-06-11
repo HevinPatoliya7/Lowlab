@@ -23,8 +23,8 @@ export function ApiKeyModal({ isOpen, onClose }: ApiKeyModalProps) {
 
   const handleSave = () => {
     const trimmed = key.trim();
-    if (trimmed && !trimmed.startsWith('AIzaSy')) {
-      setStatusMsg('Warning: API keys from Google AI Studio usually start with "AIzaSy". Please double-check.');
+    if (trimmed && !trimmed.startsWith('AIzaSy') && !trimmed.startsWith('AQ.')) {
+      setStatusMsg('Warning: API keys from Google AI Studio usually start with "AIzaSy" or "AQ.". Please double-check.');
       return;
     }
 
