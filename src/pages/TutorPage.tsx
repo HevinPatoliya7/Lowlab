@@ -100,7 +100,7 @@ export function TutorPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeModel, setActiveModel] = useState<'gemini-2.5-flash' | 'gemini-1.5-pro'>('gemini-2.5-flash');
+  const [activeModel, setActiveModel] = useState<'gemini-2.5-flash' | 'gemini-2.5-pro'>('gemini-2.5-flash');
   const [activeTags, setActiveTags] = useState<string[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -256,7 +256,7 @@ Keep responses focused — aim for 200-500 words unless the user asks for more d
                   className="bg-ink-900/[0.04] text-xs font-semibold text-ink-900/70 border border-ink-900/5 rounded-full px-3 py-1 outline-none hover:bg-ink-900/10 transition-colors cursor-pointer appearance-none pr-6"
                 >
                   <option value="gemini-2.5-flash">Gemini 2.5 Flash (Fast)</option>
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep)</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep)</option>
                 </select>
                 <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-ink-900/40 font-bold">&#9662;</div>
               </div>

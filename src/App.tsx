@@ -15,25 +15,50 @@ function App() {
     if (!cursor || !dot) return;
 
     const onMouseMove = (e: MouseEvent) => {
-      cursor.style.transform = `translate3d(${e.clientX - 16}px, ${e.clientY - 16}px, 0)`;
-      dot.style.transform = `translate3d(${e.clientX - 3}px, ${e.clientY - 3}px, 0)`;
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
       
-      // Add subtle hover enlargement
       const target = e.target as HTMLElement;
-      if (
+      if (!target) return;
+      
+      const isPointer = 
         target.tagName === 'BUTTON' || 
         target.tagName === 'A' || 
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
         target.closest('button') || 
-        target.closest('a')
-      ) {
+        target.closest('a') ||
+        target.closest('[role="button"]') ||
+        target.classList.contains('cursor-pointer') ||
+        window.getComputedStyle(target).cursor === 'pointer';
+
+      if (isPointer) {
         cursor.classList.add('cursor-hover');
       } else {
         cursor.classList.remove('cursor-hover');
       }
     };
 
+    const onMouseDown = () => {
+      cursor.classList.add('cursor-active');
+      dot.classList.add('cursor-active');
+    };
+
+    const onMouseUp = () => {
+      cursor.classList.remove('cursor-active');
+      dot.classList.remove('cursor-active');
+    };
+
     window.addEventListener('mousemove', onMouseMove);
-    return () => window.removeEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
   }, []);
 
   return (
